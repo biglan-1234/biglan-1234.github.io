@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+    <title>太武山路線查詢系統(建置中)</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUtU34qkZ_ubyL3ytUyTHfUjnLe1qel2s&callback=initMap&libraries=drawing&v=weekly"
+      defer
+    ></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="./bootstrap.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">    
+    <link rel="stylesheet" type="text/css" href="./style.css" />        
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <link rel="stylesheet" type="text/css" href="./jquery.css" />
+ <!-- <script src="./jquery.js"></script>-->
+  <script src="./index.js"></script>
+  <script src="./roadlightdata.js"></script>
+
+    
+  </head>
+  
+  <body onload="getLocation(),geoFindMe(this)">
+    <div id="floating-panel" >  
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="roadSearchCancel(this)">
+        <span aria-hidden="true">×</span>
+      </button>
+      <font size="20"><b>消防分隊:</b></font>      
+      <font size="20"><select id="start" > 
+        <option value="">請選擇分隊</option>
+        <option value="金門縣金城鎮西海路三段43號">金城分隊</option>
+        <option value="金門縣金寧鄉頂林路315號">金寧分隊</option>
+        <option value="24.42816111236182, 118.24192124048587">烈嶼分隊</option>
+        <option value="金門縣金湖鎮士校路2號">金湖分隊</option>
+        <option value="金門縣金沙鎮沙青路135號">金沙分隊</option>  
+        <option id="option_value" value="">目前位置</option> 
+      </select></font><br><br>      
+      
+      <font size="20"><b>地點描述: </b></font>      
+      <font size="20"><select id="combobox" onchange="LatLng()">        
+      </select></font>
+            <font size="20" id="toggle"></font>
+      
+      
+     </div>
+    <div id="floating-panel2" >           
+      
+      <font><b>入口點: </b></font>      
+      <font size="20"><select id="combobox1" onchange="LatLng()">        
+      </select></font>
+      <font size="20" id="toggle"></font>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="roadSearchCancel2(this)">
+        <span aria-hidden="true">×</span>
+      </button>
+      
+     </div>
+  
+    <div id="floating-panel3">
+      <input id="latlng" type="text" placeholder="例:24.4577160, 118.4057973" value="24.457716, 118.405797" />
+      <input id="submit" type="button" value="查詢" />
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="roadSearchCancel(this)">
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    
+    
+    <div id="map"></div>   
+    <h1> <span id="my_button1" class="label label-default" style="background-color:#F28500;font-size: 15px;color:black; :text-shadow: black 5px 3px 3px">玉章往屏東A</span></h1>
+    <h1> <span id="my_button2" class="label label-default" style="background-color:#32CD32;font-size: 15px;color:black">蔡厝古道B</span></h1>
+    <h1> <span id="my_button4" class="label label-default" style="background-color:#EE82EE;font-size: 15px;color:black">斗門古道D</span></h1>
+    <h1> <span id="my_button3" class="label label-default" style="background-color:#00BFFF;font-size: 15px;color:black">高坑古道C</span></h1>
+    <h1> <span id="my_button6" class="label label-default" style="background-color:#F50000;font-size: 15px;color:black">蜈蚣飛行及出土E</span></h1>
+    <h1> <span id="my_button7" class="label label-default" style="background-color:#009494;font-size: 15px;color:black">山羊線四堡F</span></h1>
+    <h1> <span id="my_button5" class="label label-default" style="background-color:#EAC100;font-size: 15px;color:black">植物園猛虎道G</span></h1>
+     <h1> <span id="my_button8" class="label label-default" style="background-color:#3030FF;font-size: 15px;color:black">南風隙古道H</span></h1>
+     <!--<h1> <span id="my_button9" class="label label-default" style="background-color:#8100E0;font-size: 15px;color:black">太武山大縱走</span></h1>-->
+   <button style="text-align:center" onclick="roadSearch(this)" type="button" id="my_button" >查詢</button>
+   <button style="text-align:center" onclick="roadSearch2(this)" type="button" id="my_button00" >入口</button>
+       <p style="text-align:center" id="out" ></p>
+       
+
+    
+    <script>
+    
+  
+    
+    function geoFindMe() {
+  var output = document.getElementById("out");
+
+  if (!navigator.geolocation){
+    output.innerHTML = "<p>地理座標不支援你的瀏覽器</p>";
+    return;
+  }
+
+  function success(position) {
+    var latitude  = position.coords.latitude;
+    var longitude = position.coords.longitude;
+
+    output.innerHTML = '<p> <font size="0.3">緯度 : ' + latitude + '°<br>經度 : ' + longitude + '°</font></p>';
+
+   
+  };
+
+  function error() {
+    output.innerHTML = "無法取得經緯度座標";
+  };
+
+  var options = {
+  enableHighAccuracy: true
+  
+};
+          
+      
+      
+      
+  output.innerHTML = "<p>定位中…</p>";
+
+  navigator.geolocation.watchPosition(success, error, options);
+}
+    
+    
+    </script>
+    
+    
+    
+    <script>
+function LatLng() {
+  
+  var latlng = document.querySelector("#combobox1").value;
+  var lat = parseFloat(latlng.split(",")[0]);
+  var lng = parseFloat(latlng.split(",")[1]);
+  
+  var infowindow = new google.maps.InfoWindow({
+   content:'<IMG SRC="https://github.com/biglan-1234/googlemap/blob/master/HERE1.png?raw=true" width=50px height=50px>',
+    
+    position: {
+      lat: lat,
+      lng: lng
+    },
+    pixelOffset: new google.maps.Size(0, -30) ,
+  });
+  
+  infowindow.open(map);
+  
+  map.setCenter(latlng);
+  
+  
+  
+}
+</script>
+      
+    
+    
+<script>
+function roadSearchCancel2(id) {
+  
+  window.document.querySelector("#floating-panel2").style.display="none";
+}
+</script>
+    
+    <script>
+function roadSearchCancel(id) {
+  
+  window.document.querySelector("#floating-panel3").style.display="none";
+}
+</script>
+    
+<script>
+function roadSearch2(id) {
+  
+  window.document.querySelector("#floating-panel3").style.display="none";
+  window.document.querySelector("#floating-panel2").style.display="block";
+}
+  
+  
+</script> 
+    
+    <script>
+function roadSearch(id) {
+  
+  window.document.querySelector("#floating-panel2").style.display="none";
+  window.document.querySelector("#floating-panel3").style.display="block";
+}
+  
+  
+</script> 
+    
+    
+    <script>
+var x = document.getElementById("option_value");
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(showPosition,showError,options);
+  } else {
+    x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+}
+
+function showPosition(position) {
+  x.value = position.coords.latitude +','+ position.coords.longitude;
+}
+      
+function showError(error) {
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      x.innerHTML = "使用者拒絕存取."
+      break;
+    case error.POSITION_UNAVAILABLE:
+      x.innerHTML = "Location information is unavailable."
+      break;
+    case error.TIMEOUT:
+      x.innerHTML = "The request to get user location timed out."
+      break;
+    case error.UNKNOWN_ERROR:
+      x.innerHTML = "An unknown error occurred."
+      break;
+  }
+}     
+    
+      var options = {
+  enableHighAccuracy: true
+  
+};
+      
+</script>
+
+    
+    
+     <script>
+      
+         var datas = [
+{"編號":"5","路線":"玉章往屏東","地點描述":"玉章路起點",LAT:24.458251,LNG:118.405213,"海拔":"90m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130925.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130923.jpg?raw=true","地點照片3":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130924.jpg?raw=true"}
+,
+{"編號":"8","路線":"玉章往屏東","地點描述":"0.2K旁稜線路口",LAT:24.459515,LNG:118.406164,"海拔":"105m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130931.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"13","路線":"玉章往屏東","地點描述":"思源亭",LAT:24.458961,LNG:118.409767,"海拔":"172m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130939.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130940.jpg?raw=true","地點照片3":""}
+,
+{"編號":"14","路線":"玉章往屏東","地點描述":"劉玉章像",LAT:24.459225,LNG:118.409691,"海拔":"173m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130941.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"18","路線":"玉章往屏東","地點描述":"風動石(0.9K)",LAT:24.460449,LNG:118.410224,"海拔":"195m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130947.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130948.jpg?raw=true","地點照片3":""}
+,
+{"編號":"19","路線":"玉章往屏東","地點描述":"無線電塔",LAT:24.460543,LNG:118.40945,"海拔":"204m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130949.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"20","路線":"玉章往屏東","地點描述":"1.0k(石兔)",LAT:24.461227,LNG:118.412052,"海拔":"175m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130950.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"22","路線":"玉章往屏東","地點描述":"1.2k(倒影塔路口)",LAT:24.462202,LNG:118.413791,"海拔":"219m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130952.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"23","路線":"玉章往屏東","地點描述":"倒影塔石頭",LAT:24.462438,LNG:118.413999,"海拔":"224m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130953.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"24","路線":"玉章往屏東","地點描述":"倒影塔",LAT:24.462698,LNG:118.41409,"海拔":"230m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130954.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"25","路線":"玉章往屏東","地點描述":"鄭成功觀兵弈棋處",LAT:24.462872,LNG:118.414131,"海拔":"225m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130955.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130956.jpg?raw=true","地點照片3":""}
+,
+編號":"27","路線":"玉章往屏東","地點描述":"蟹眼泉",LAT:24.462954,LNG:118.415815,"海拔":"220m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130958.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130959.jpg?raw=true","地點照片3":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130960.jpg?raw=true"}
+,
+{"編號":"28","路線":"玉章往屏東","地點描述":"1.4k(蟹眼泉路口)",LAT:24.463004,LNG:118.415438,"海拔":"227m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130961.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"29","路線":"玉章往屏東","地點描述":"1.5K(毋忘在莒)",LAT:24.4635,LNG:118.416183,"海拔":"231m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130962.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130963.jpg?raw=true","地點照片3":""}
+,
+{"編號":"30","路線":"玉章往屏東","地點描述":"梅園",LAT:24.463499,LNG:118.416834,"海拔":"225m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130964.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"32","路線":"玉章往屏東","地點描述":"1.6K(海印寺)",LAT:24.462712,LNG:118.418421,"海拔":"221m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130966.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"35","路線":"玉章往屏東","地點描述":"1.8k(西方極樂塔)",LAT:24.463647,LNG:118.418464,"海拔":"217m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130969.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130970.jpg?raw=true","地點照片3":""}
+,
+{"編號":"41","路線":"玉章往屏東","地點描述":"頑石點頭",LAT:24.4657,LNG:118.421928,"海拔":"160m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130977.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"42","路線":"玉章往屏東","地點描述":"觀日步道1",LAT:24.466072,LNG:118.422039,"海拔":"174m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130978.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"43","路線":"玉章往屏東","地點描述":"其介如石",LAT:24.466217,LNG:118.422044,"海拔":"171m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130979.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"45","路線":"玉章往屏東","地點描述":"觀日步道2",LAT:24.466554,LNG:118.422168,"海拔":"174m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130982.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"48","路線":"玉章往屏東","地點描述":"2.6k(小柱堡路口)",LAT:24.467994,LNG:118.424209,"海拔":"171m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130987.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130988.jpg?raw=true","地點照片3":""}
+,
+{"編號":"53","路線":"玉章往屏東","地點描述":"3.1k(屏東營區)",LAT:24.470292,LNG:118.426699,"海拔":"140m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/130997.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"56","路線":"玉章往屏東","地點描述":"3.4k"(文康中心路口),LAT:24.470431,LNG:118.429177,"海拔":"105m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/131000.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"57","路線":"玉章往屏東","地點描述":"屏東文康中心",LAT:24.471146,LNG:118.429664,"海拔":"99m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E7%8E%89%E7%AB%A0%E8%B7%AF%E5%BE%80%E5%B1%8F%E6%9D%B1/131001.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"2","路線":"蔡厝古道","地點描述":"0k",LAT:24.471601,LNG:118.41679,"海拔":"35m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133882.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133881.jpg?raw=true","地點照片3":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133880.jpg?raw=true"}
+,
+
+{"編號":"7","路線":"蔡厝古道","地點描述":"0.26J(木臺休息區)",LAT:24.471244,LNG:118.419004,"海拔":"53m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133891.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"11","路線":"蔡厝古道","地點描述":"元履湖",LAT:24.470725,LNG:118.41931,"海拔":"71m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133897.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133898.jpg?raw=true","地點照片3":""}
+,
+
+{"編號":"15","路線":"蔡厝古道","地點描述":"百二階叉路口",LAT:24.469894,LNG:118.421032,"海拔":"84m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133904.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133905.jpg?raw=true","地點照片3":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133906.jpg?raw=true"}
+,
+
+{"編號":"20","路線":"蔡厝古道","地點描述":"1.0K(四堡線叉路口)",LAT:24.46671,LNG:118.419296,"海拔":"193m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133915.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"22","路線":"蔡厝古道","地點描述":"石頭平臺",LAT:24.466359,LNG:118.418814,"海拔":"224m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133918.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{編號":"23","路線":"蔡厝古道","地點描述":"大鋼堡(麻煩新增)",LAT:24.466108,LNG:118.418648,"海拔":"235m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133919.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133920.jpg?raw=true","地點照片3":""}
+,
+{"編號":"24","路線":"蔡厝古道","地點描述":"元碑",LAT:24.465394,LNG:118.418454,"海拔":"238m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133921.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133922.jpg?raw=true","地點照片3":""}
+,
+
+{"編號":"27","路線":"蔡厝古道","地點描述":"木橋",LAT:24.464146,LNG:118.41806,"海拔":"207m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133927.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"29","路線":"蔡厝古道","地點描述":"1.5k(玉章路出口)",LAT:24.463621,LNG:118.417296,"海拔":"217m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133930.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E8%94%A1%E5%8E%9D%E5%8F%A4%E9%81%93/133931.jpg?raw=true","地點照片3":""}
+,
+{"編號":"1","路線":"斗門古道","地點描述":"斗門登山口木牌",LAT:24.467357,LNG:118.408144,"海拔":"91m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133932.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"2","路線":"斗門古道","地點描述":"斗門登山路口",LAT:24.464945,LNG:118.40843,"海拔":"72m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133933.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133934.jpg?raw=true","地點照片3":""}
+,
+
+{"編號":"5","路線":"斗門古道","地點描述":"南風隙叉路口",LAT:24.464115,LNG:118.409576,"海拔":"107m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133939.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"8","路線":"斗門古道","地點描述":"木作平臺叉路口",LAT:24.463183,LNG:118.410471,"海拔":"108m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133945.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133946.jpg?raw=true","地點照片3":""}
+,
+{"編號":"9","路線":"斗門古道","地點描述":"斗234叉路口",LAT:24.463158,LNG:118.410833,"海拔":"113m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133947.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"14","路線":"斗門古道","地點描述":"石頭斜坡瞭望處",LAT:24.463685,LNG:118.413104,"海拔":"212m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133956.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+@編號":"15","路線":"斗門古道","地點描述":"0.7k",LAT:24.463689,LNG:118.413416,"海拔":"227m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133958.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133959.jpg?raw=true","地點照片3":""}
+,
+@編號":"16","路線":"斗門古道","地點描述":"0.8k",LAT:24.463698,LNG:118.414201,"海拔":"232m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133960.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133961.jpg?raw=true","地點照片3":""}
+,
+{"編號":"17","路線":"斗門古道","地點描述":"往蔡厝新道叉路口",LAT:24.463665,LNG:118.414697,"海拔":"163m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133962.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"19","路線":"斗門古道","地點描述":"0.994k(倒影塔)",LAT:24.46286,LNG:118.414097,"海拔":"236m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133965.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133966.jpg?raw=true","地點照片3":"https://github.com/biglan-1234/googlemap/blob/master/%E6%96%97%E9%96%80%E5%8F%A4%E9%81%93/133967.jpg?raw=true"}
+,
+{"編號":"1","路線":"高坑古道","地點描述":"高坑古道路口",LAT:24.465772,LNG:118.395908,"海拔":"44m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133968.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133969.jpg?raw=true","地點照片3":""}
+,
+{"編號":"2","路線":"高坑古道","地點描述":"高坑古道25m處",LAT:24.465528,LNG:118.396134,"海拔":"40m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133970.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133971.jpg?raw=true","地點照片3":""}
+,
+{"編號":"3","路線":"高坑古道","地點描述":"高坑古道50m處",LAT:24.465339,LNG:118.396263,"海拔":"47m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133972.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133973.jpg?raw=true","地點照片3":""}
+,
+{"編號":"4","路線":"高坑古道","地點描述":"高坑古道木梯",LAT:24.465139,LNG:118.396134,"海拔":"52m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133975.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"5","路線":"高坑古道","地點描述":"高坑古道標記點5",LAT:24.464812,LNG:118.395747,"海拔":"64m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133976.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133977.jpg?raw=true","地點照片3":""}
+,
+{"編號":"6","路線":"高坑古道","地點描述":"高坑古道標記點6",LAT:24.464156,LNG:118.395227,"海拔":"119m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133978.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133979.jpg?raw=true","地點照片3":""}
+,
+{"編號":"7","路線":"高坑古道","地點描述":"高坑古道標記點7",LAT:24.463137,LNG:118.394728,"海拔":"66m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133980.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"8","路線":"高坑古道","地點描述":"高坑古道標記點8",LAT:24.462829,LNG:118.394373,"海拔":"84m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133981.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133982.jpg?raw=true","地點照片3":""}
+,
+{"編號":"9","路線":"高坑古道","地點描述":"高坑古道標記點9",LAT:24.462805,LNG:118.39418,"海拔":"73m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E9%AB%98%E5%9D%91%E5%8F%A4%E9%81%93/133983.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"1","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"植物園入口",LAT:24.454406,LNG:118.397612,"海拔":"88m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139074.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139073.jpg?raw=true","地點照片3":""}
+,
+{"編號":"2","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"植物園停車場",LAT:24.45574,LNG:118.397734,"海拔":"87m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139133.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"3","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"植物園導覽圖",LAT:24.4559,LNG:118.39765,"海拔":"88m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139131.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139130.jpg?raw=true","地點照片3":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139129.jpg?raw=true"}
+,
+{"編號":"4","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"旅遊資訊站",LAT:24.456155,LNG:118.397485,"海拔":"89m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139124.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"5","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"老兵故事館",LAT:24.45943,LNG:118.39877,"海拔":"95m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139125.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139126.jpg?raw=true","地點照片3":""}
+,
+{"編號":"6","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"籃球場",LAT:24.456744,LNG:118.397223,"海拔":"87m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139123.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139122.jpg?raw=true","地點照片3":""}
+,
+{"編號":"7","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"高塔",LAT:24.456731,LNG:118.396603,"海拔":"86m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139121.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"8","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口1",LAT:24.457297,LNG:118.395971,"海拔":"94m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139120.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"9","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.458186,LNG:118.396686,"海拔":"97m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139119.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"10","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.459054,LNG:118.396928,"海拔":"121m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139118.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"11","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.459215,LNG:118.396644,"海拔":"93m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139117.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"12","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.45955,LNG:118.396543,"海拔":"125m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139116.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"13","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.459661,LNG:118.396821,"海拔":"128m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139115.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"14","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.459838,LNG:118.397047,"海拔":"139m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139114.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"15","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"繩索上下點1",LAT:24.459897,LNG:118.397016,"海拔":"136m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139113.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"16","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.46017,LNG:118.397259,"海拔":"136m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139112.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"17","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.461655,LNG:118.3981,"海拔":"128m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139111.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"18","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.462026,LNG:118.39832,"海拔":"128m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139110.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"19","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.462197,LNG:118.398436,"海拔":"122m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139109.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"20","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"河山在望",LAT:24.462467,LNG:118.398757,"海拔":"123m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139108.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"21","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"擎天水庫",LAT:24.46319,LNG:118.398308,"海拔":"116m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139107.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"22","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"涼庭",LAT:24.4639,LNG:118.398377,"海拔":"109m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139106.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"23","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.463148,LNG:118.399061,"海拔":"117m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139105.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"24","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.463125,LNG:118.399755,"海拔":"120m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139104.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"25","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"繩索上下點2",LAT:24.46316,LNG:118.39993,"海拔":"128m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139103.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"26","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.462625,LNG:118.400028,"海拔":"124m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139102.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"27","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.462362,LNG:118.400062,"海拔":"92m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139101.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"28","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.46147,LNG:118.399695,"海拔":"118m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139100.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"29","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.46142,LNG:118.400292,"海拔":"134m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139098.jpg?raw=true","地點照片2":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139099.jpg?raw=true","地點照片3":""}
+,
+{"編號":"30","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口2",LAT:24.461105,LNG:118.400437,"海拔":"140m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139097.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"31","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口3",LAT:24.460219,LNG:118.399954,"海拔":"92m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139096.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"32","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"飲水思源",LAT:24.46054,LNG:118.400252,"海拔":"90m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139402.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"33","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.460092,LNG:118.399817,"海拔":"90m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139095.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"34","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"莊敬自強",LAT:24.460688,LNG:118.399354,"海拔":"96m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139094.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"35","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"觀景平台",LAT:24.461094,LNG:118.399226,"海拔":"99m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139092.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"36","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口4",LAT:24.460793,LNG:118.399217,"海拔":"118m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139090.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"37","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.461362,LNG:118.400657,"海拔":"116m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139089.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"39","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.461173,LNG:118.401651,"海拔":"101m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139087.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"40","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.460729,LNG:118.401326,"海拔":"137m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139085.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"41","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口5",LAT:24.460571,LNG:118.40142,"海拔":"143m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139084.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"42","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口6",LAT:24.460246,LNG:118.401752,"海拔":"115m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139083.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"43","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.460151,LNG:118.403353,"海拔":"149m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139082.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"44","路線":"植物園-擎天水庫-玉章0.2k","地點描述":".",LAT:24.460266,LNG:118.404206,"海拔":"99m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139081.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"47","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口7",LAT:24.459949,LNG:118.40548,"海拔":"105m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139077.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+
+{"編號":"49","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"叉路口8",LAT:24.459671,LNG:118.406157,"海拔":"100m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139076.jpg?raw=true","地點照片2":"","地點照片3":""}
+,
+{"編號":"50","路線":"植物園-擎天水庫-玉章0.2k","地點描述":"玉章0.2k出口",LAT:24.459565,LNG:118.406177,"海拔":"121m","地點照片1":"https://github.com/biglan-1234/googlemap/blob/master/%E6%A4%8D%E7%89%A9%E5%9C%92-%E6%93%8E%E5%A4%A9%E6%B0%B4%E5%BA%AB-%E7%8E%89%E7%AB%A00.2k/139075.jpg?raw=true","地點照片2":"","地點照片3":""}
+
+]
+         
+         var datas2 = [
+{"編號":"17","地點":"0.2K","路線":"A","路線點":"A1","路線顏色":"橘","入口點":"入口點---A1---0.2K南風隙",東經:118.406164,北緯:24.459515,"備註":"南風隙","圖片1":"","圖片2":""}
+,
+{"編號":"18","地點":"0.9K","路線":"A","路線點":"A2","路線顏色":"橘","入口點":"入口點---A2---0.9K風動石",東經:118.411314,北緯:24.460741,"備註":"風動石","圖片1":"","圖片2":""}
+,
+{"編號":"19","地點":"1.2K","路線":"A","路線點":"A3","路線顏色":"橘","入口點":"入口點---A3---1.2K倒影塔",東經:118.413791,北緯:24.462202,"備註":"倒影塔","圖片1":"","圖片2":""}
+,
+{"編號":"20","地點":"1.5K","路線":"A","路線點":"A4","路線顏色":"橘","入口點":"入口點---A4---1.5K母忘在莒",東經:118.416183,北緯:24.4635,"備註":"毋忘在莒","圖片1":"","圖片2":""}
+,
+{"編號":"22","地點":"2.1K","路線":"A","路線點":"A5","路線顏色":"橘","入口點":"入口點---A5---2.1K太武池",東經:118.42083,北緯:24.465109,"備註":"太武池","圖片1":"","圖片2":""}
+,
+{"編號":"23","地點":"2.2-2.3K","路線":"A","路線點":"A6","路線顏色":"橘","入口點":"入口點---A6---2.3K觀日步道",東經:118.422039,北緯:24.466072,"備註":"觀日步道","圖片1":"","圖片2":""}
+,
+{"編號":"24","地點":"2.6K","路線":"A","路線點":"A7","路線顏色":"橘","入口點":"入口點---A7---2.6K小柱堡入口",東經:118.424209,北緯:24.467994,"備註":"小柱堡入口","圖片1":"","圖片2":""}
+,
+{"編號":"25","地點":"3.4K","路線":"A","路線點":"A8","路線顏色":"橘","入口點":"入口點---A8---3.4K屏東營區",東經:118.4263888,北緯:24.4701977,"備註":"屏東營區","圖片1":"","圖片2":""}
+,
+{"編號":"7","地點":"屏東段","路線":"A","路線點":"A9","路線顏色":"橘","入口點":"入口點---A9---屏東段",東經:118.4291666,北緯:24.4704854,"備註":"文康中心","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/7.jpg?raw=true","圖片2":""}
+,
+{"編號":"8","地點":"羊角窿","路線":"A","路線點":"A10","路線顏色":"橘","入口點":"入口點---A10---羊角窿",東經:118.4296443,北緯:24.4704554,"備註":"","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/8.jpg?raw=true","圖片2":""}
+,
+{"編號":"4","地點":"蔡厝古道","路線":"B","路線點":"B1","路線顏色":"綠","入口點":"入口點---B1---蔡厝古道",東經:118.4168666,北緯:24.4714999,"備註":"","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/4.jpg?raw=true","圖片2":""}
+,
+{"編號":"6","地點":"百二階","路線":"B","路線點":"B2","路線顏色":"綠","入口點":"入口點---B2---百二階",東經:118.420911,北緯:24.4698999,"備註":"小龍山、小柱堡、小鳳山、蔡厝新道","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/6.jpg?raw=true","圖片2":""}
+,
+{"編號":"26","地點":"高坑古道","路線":"C","路線點":"C1","路線顏色":"淡藍","入口點":"入口點---C1---高坑古道",東經:118.3959284,北緯:24.4657838,"備註":"高坑古道","圖片1":"","圖片2":""}
+,
+{"編號":"3","地點":"斗門古道","路線":"D","路線點":"D1","路線顏色":"紫","入口點":"入口點---D1---斗門古道",東經:118.4083333,北緯:24.465,"備註":"斗1.2.3","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/3.jpg?raw=true","圖片2":""}
+,
+{"編號":"9","地點":"小蜈蚣","路線":"E","路線點":"E1","路線顏色":"紅","入口點":"入口點---E1---小娛蚣",東經:118.4313888,北緯:24.4706332,"備註":"龍陵胡","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/9.jpg?raw=true","圖片2":""}
+,
+{"編號":"10","地點":"鵲山入口","路線":"E","路線點":"E2","路線顏色":"紅","入口點":"入口點---E2---鵲山入口",東經:118.4346221,北緯:24.4674199,"備註":"車輛進入口","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/10.jpg?raw=true","圖片2":""}
+,
+{"編號":"11","地點":"鵲山登山口","路線":"E","路線點":"E3","路線顏色":"紅","入口點":"入口點---E3---鵲山登山口",東經:118.4274999,北緯:24.4643044,"備註":"蜈蚣飛行(蜈蚣1.2.3)、蜈蚣出土","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/11.jpg?raw=true","圖片2":""}
+,
+{"編號":"12","地點":"迎賓館","路線":"E","路線點":"E4","路線顏色":"紅","入口點":"入口點---E4---迎賓館",東經:118.4169443,北緯:24.4497221,"備註":"蜈蚣出土","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/12.jpg?raw=true","圖片2":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/12-1.jpg?raw=true"}
+,
+{"編號":"21","地點":"1.6K","路線":"E","路線點":"E5","路線顏色":"紅","入口點":"入口點---E5---海印寺",東經:118.418421,北緯:24.462712,"備註":"海印寺","圖片1":"","圖片2":""}
+,
+{"編號":"5","地點":"蔡厝風獅爺","路線":"F","路線點":"F1","路線顏色":"藍綠","入口點":"入口點---F1---蔡厝風獅爺",東經:118.4163888,北緯:24.471111,"備註":"蔡厝新道","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/5.jpg?raw=true","圖片2":""}
+,
+{"編號":"13","地點":"蟠龍岡","路線":"G","路線點":"G1","路線顏色":"黃","入口點":"入口點---G1---蟠龍岡",東經:118.3972221,北緯:24.4554555,"備註":"植物園","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/13.jpg?raw=true","圖片2":""}
+,
+{"編號":"14","地點":"猛虎步道","路線":"G","路線點":"G2","路線顏色":"黃","入口點":"入口點---G2---猛虎步道",東經:118.3977277,北緯:24.4559333,"備註":"植物園","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/14.jpg?raw=true","圖片2":""}
+,
+{"編號":"15","地點":"莊敬自強","路線":"G","路線點":"G3","路線顏色":"黃","入口點":"入口點---G3---莊敬自強",東經:118.3993444,北緯:24.460625,"備註":"植物園","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/15.jpg?raw=true","圖片2":""}
+,
+{"編號":"16","地點":"飲水思源(竹林)","路線":"G","路線點":"G4","路線顏色":"黃","入口點":"入口點---G4---飲水思源",東經:118.3999599,北緯:24.4602,"備註":"植物園","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/16.jpg?raw=true","圖片2":""}
+,
+{"編號":"1","地點":"南風隙入口","路線":"H","路線點":"H1","路線顏色":"深藍","入口點":"入口點---H1---南風隙入口",東經:118.4023222,北緯:24.4706332,"備註":"車輛進入口","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/1.jpg?raw=true","圖片2":""}
+,
+{"編號":"2","地點":"南風隙","路線":"H","路線點":"H2","路線顏色":"深藍","入口點":"入口點---H2---南風隙",東經:118.4055555,北緯:24.4641666,"備註":"仙人座、馬蹄印、0.2Ｋ","圖片1":"https://github.com/biglan-1234/googlemap/blob/master/%E5%A4%AA%E6%AD%A6%E5%B1%B1%E7%99%BB%E5%85%A5%E5%8F%A3/2.jpg?raw=true","圖片2":""}
+
+]
+ 
+         
+$(function(){
+    datas.map(function(data){
+        $('#combobox').append('<option value="'+ data.LAT+','+data.LNG +'">' + data.地點描述 + '</option>');
+    });
+});
+       
+       $(function(){
+    datas2.map(function(data){
+        $('#combobox1').append('<option value="'+ data.北緯+','+data.東經 +'">' + data.路線點 + '</option>');
+    });
+});
+
+</script>    
+  </body>
+</html>      
